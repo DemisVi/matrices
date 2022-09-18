@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Collections.Generic;
 
 int sizeA = 4;
 int sizeB = 3;
@@ -59,4 +60,27 @@ int[,] Fill(int rows, int cols)
             temp[i, j] = rand.Next(0, 101);
 
     return temp;
+}
+
+List<int[,]> GetSegments(int[,] matrix, int count)
+{
+    var matrixRows = matrix.GetLength(0);
+    var matrixColumns = matrix.GetLength(1);
+    var segmentRows = matrixRows % count != 0 ? matrixRows / count + 1 : matrixRows / count;
+    var reminder = matrixRows % segmentRows;
+    var result = new List<int[,]>(count);
+
+    for (var i = 0; i < matrixRows; i += segmentRows)
+    {
+        if (i + reminder > matrixRows - 1) segmentRows = reminder;
+        var temp = new int[segmentRows, matrixColumns];
+        for (var j = 0; j < matrixColumns; j++)
+            for (var k = 0; k < segmentRows; k++)
+            {
+                temp[k, j] = matrix[i + k, j];
+            }
+        result.Add(temp);
+    }
+
+    return result;
 }
