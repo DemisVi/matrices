@@ -4,8 +4,8 @@ using System.Threading;
 using System.Numerics;
 using System.Collections.Generic;
 
-const int sizeA = 11;
-const int sizeB = 2;
+const int sizeA = 1000;
+const int sizeB = 1000;
 
 var matrixA = FillRandom(sizeA, sizeB, 10, 100);
 var matrixB = FillRandom(sizeB, sizeA, 10, 100);
@@ -13,16 +13,7 @@ var matrixB = FillRandom(sizeB, sizeA, 10, 100);
 Print(matrixA, "matrixA");
 Print(matrixB, "matrixB");
 
-var result = Multiply(matrixA, matrixB);
-
-Print(result, "result");
-
-var seg = GetSegments(result, 3);
-
-foreach (var i in seg)
-    Print(i, $"seg {i}: ");
-
-Print(Group(seg), "grouped");
+Print(Group(GetSegments(Multiply(matrixA, matrixB), 2)), "grouped");
 
 Thread.Sleep(100);
 
