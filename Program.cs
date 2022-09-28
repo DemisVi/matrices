@@ -4,7 +4,7 @@ using System.Threading;
 using System.Numerics;
 using System.Collections.Generic;
 
-const int sizeA = 5;
+const int sizeA = 11;
 const int sizeB = 2;
 
 var matrixA = FillRandom(sizeA, sizeB, 10, 100);
@@ -17,32 +17,33 @@ var result = Multiply(matrixA, matrixB);
 
 Print(result, "result");
 
-var segmented = GetSegments(result, 3);
+var seg = GetSegments(result, 3);
 
-var targetHeight = (segmented.Count - 1) * segmented.ElementAt(0).GetLength(0) + (segmented.Last().GetLength(0));
-var targetWidth = segmented.ElementAt(0).GetLength(1);
+foreach (var i in seg)
+    Print(i, $"seg {i}: ");
 
-var first = segmented[0];
-var last = segmented[2];
-Print(first, "first");
-Print(last, "last");
-
-var src = new List<int[,]>() { first, last };
-
-var res = new int[targetHeight, targetWidth];
-
-var c = 0;
-foreach (var i in segmented)
-    for (var j = 0; j < i.GetLength(0); j++)
-    {
-        for (var k = 0; k < i.GetLength(1); k++)
-            res[c, k] = i[j, k];
-        c++;
-    }
-
-Print(res, "res");
+Print(Group(seg), "grouped");
 
 Thread.Sleep(100);
+
+int[,] Group(List<int[,]> src)
+{
+    var targetHeight = (src.Count - 1) * src.ElementAt(0).GetLength(0) + (src.Last().GetLength(0));
+    var targetWidth = src.ElementAt(0).GetLength(1);
+
+    var res = new int[targetHeight, targetWidth];
+
+    var c = 0;
+    foreach (var i in src)
+        for (var j = 0; j < i.GetLength(0); j++)
+        {
+            for (var k = 0; k < i.GetLength(1); k++)
+                res[c, k] = i[j, k];
+            c++;
+        }
+    
+    return res;
+}
 
 int[,] Multiply(int[,] matrixa, int[,] matrixb)
 {
