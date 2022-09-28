@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Numerics;
 using System.Collections.Generic;
 
@@ -9,33 +10,39 @@ const int sizeB = 2;
 var matrixA = FillRandom(sizeA, sizeB, 10, 100);
 var matrixB = FillRandom(sizeB, sizeA, 10, 100);
 
-Print(matrixA);
-Print(matrixB);
+Print(matrixA, "matrixA");
+Print(matrixB, "matrixB");
 
 var result = Multiply(matrixA, matrixB);
 
-Print(result);
+Print(result, "result");
 
 var segmented = GetSegments(result, 3);
 
 var targetHeight = (segmented.Count - 1) * segmented.ElementAt(0).GetLength(0) + (segmented.Last().GetLength(0));
 var targetWidth = segmented.ElementAt(0).GetLength(1);
 
+var first = segmented[0];
+var last = segmented[2];
+Print(first, "first");
+Print(last, "last");
+
+var src = new List<int[,]>() { first, last };
+
 var res = new int[targetHeight, targetWidth];
 
-var last = segmented[2];
-var first = segmented[0];
-Print(last);
-Print(first);
+var c = 0;
+foreach (var i in segmented)
+    for (var j = 0; j < i.GetLength(0); j++)
+    {
+        for (var k = 0; k < i.GetLength(1); k++)
+            res[c, k] = i[j, k];
+        c++;
+    }
 
-for (var k = 0; k < segmented.Count; k++)
-    for (var i = 0; i < segmented.ElementAt(k).GetLength(0); i++)
-        for (var j = 0; j < segmented.ElementAt(k).GetLength(1); j++)
-            res[i * (k + 1), j] = segmented[k][i, j];
+Print(res, "res");
 
-Print(res);
-
-System.Console.WriteLine(1);
+Thread.Sleep(100);
 
 int[,] Multiply(int[,] matrixa, int[,] matrixb)
 {
@@ -62,8 +69,9 @@ int[,] Multiply(int[,] matrixa, int[,] matrixb)
     return result;
 }
 
-void Print(int[,] matrix)
+void Print(int[,] matrix, string title)
 {
+    System.Console.WriteLine(title);
     for (var i = 0; i < matrix.GetLength(0); i++)
     {
         for (int j = 0; j < matrix.GetLength(1); j++)
