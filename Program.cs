@@ -7,15 +7,17 @@ public static class SimpleBench
 {
     public static void Main()
     {
-        var m1 = new int[5, 5];
-        var m2 = new int[5, 5];
+        var m1 = new int[2, 5];
+        var m2 = new int[5, 2];
 
         FillRandom(ref m1, 20, 30);
         FillRandom(ref m2, 20, 30);
 
         var start = DateTime.Now;
 
-        var s1 = Matrix.ThreadedMultiply(m1, m2).AsString();
+        System.Console.WriteLine(m1.AsString() + m2.AsString());
+        var s1 = Matrix.ThreadedMultiply(m1, m2, false).AsString();
+        System.Console.WriteLine(s1);
 
         System.Console.WriteLine(DateTime.Now - start);
 
@@ -24,7 +26,9 @@ public static class SimpleBench
 
         start = DateTime.Now;
         
-        var s2 = Matrix.Multiply(m1, m2).AsString();
+        System.Console.WriteLine(m1.AsString() + m2.AsString());
+        var s2 = Matrix.Multiply(m1, m2, false).AsString();
+        System.Console.WriteLine(s2);
 
         System.Console.WriteLine(DateTime.Now - start);
 

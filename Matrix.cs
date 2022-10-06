@@ -7,7 +7,7 @@ namespace Matrix;
 
 public static class Matrix
 {
-    public static int[,] ThreadedMultiply(int[,] matrixA, int[,] matrixB)
+    public static int[,] ThreadedMultiply(int[,] matrixA, int[,] matrixB, bool isTransposed = false)
     {
         var segCount = matrixA.GetLength(0) < Environment.ProcessorCount ? matrixA.GetLength(0) : Environment.ProcessorCount;
 
@@ -17,10 +17,14 @@ public static class Matrix
 
         foreach (var seg in GetSegments(matrixA, segCount).Select((value, index) => new { value, index }))
         {
-            res.Add(new int[seg.value.GetLength(0), seg.value.GetLength(1)]);
+            if (isTransposed)
+                res.Add(new int[seg.value.GetLength(0), seg.value.GetLength(0)]);
+            else
+                res.Add(new int[seg.value.GetLength(0), seg.value.GetLength(1)]);
+
             ThreadPool.QueueUserWorkItem((_) =>
             {
-                res[seg.index] = Multiply(seg.value, matrixB);
+                res[seg.index] = Multiply(seg.value, matrixB, isTransposed);
                 countdownEvent.Signal();
             });
         }
@@ -29,10 +33,13 @@ public static class Matrix
 
         return Group(res);
     }
-    public static int[,] Multiply(int[,] matrixA, int[,] matrixB)
+
+    public static int[,] Multiply(int[,] matrixA, int[,] matrixB, bool isTransposed = false)
     {
+        if (isTransposed) return MultiplyTransposed(matrixA, matrixB);
+
         if (matrixA.GetLength(1) != matrixB.GetLength(0))
-            throw new ArithmeticException("Multiplication not possible");
+            throw new ArithmeticException("Multiplication not possible. Is matrix B transposed?");
 
         var resultRowLength = matrixA.GetLength(0);
         var resultColumnLength = matrixB.GetLength(1);
@@ -48,6 +55,31 @@ public static class Matrix
                 accumulator = 0;
                 for (int k = 0; k < initialBColumnLength; k++)
                     accumulator += matrixA[i, k] * matrixB[k, j];
+                result[i, j] = accumulator;
+            }
+
+        return result;
+    }
+
+    public static int[,] MultiplyTransposed(int[,] matrixA, int[,] matrixB)
+    {
+        if (matrixA.GetLength(1) != matrixB.GetLength(1))
+            throw new ArithmeticException("Multiplication not possible. Is matrix B transposed?");
+
+        var resultRowLength = matrixA.GetLength(0);
+        var resultColumnLength = matrixB.GetLength(0);
+        var initialBColumnLength = matrixB.GetLength(1);
+
+        var result = new int[resultRowLength, resultColumnLength];
+
+        var accumulator = 0;
+
+        for (int i = 0; i < resultRowLength; i++)
+            for (int j = 0; j < resultColumnLength; j++)
+            {
+                accumulator = 0;
+                for (int k = 0; k < initialBColumnLength; k++)
+                    accumulator += matrixA[i, k] * matrixB[j, k];
                 result[i, j] = accumulator;
             }
 
