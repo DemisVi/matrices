@@ -1,98 +1,85 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
 
-class Matrix
+namespace Matrix;
+
+public static class Matrix
 {
-
-    public int[,] Multiply(int[,] matrixa, int[,] matrixb)
+    public static int[,] ThreadedMultiply(int[,] matrixA, int[,] matrixB)
     {
-        if (matrixa.GetLength(1) != matrixb.GetLength(0))
+        var segCount = matrixA.GetLength(0) < Environment.ProcessorCount ? matrixA.GetLength(0) : Environment.ProcessorCount;
+
+        var res = new List<int[,]>(segCount);
+
+        using var countdownEvent = new CountdownEvent(segCount);
+
+        foreach (var seg in GetSegments(matrixA, segCount).Select((value, index) => new { value, index }))
+        {
+            res.Add(new int[seg.value.GetLength(0), seg.value.GetLength(1)]);
+            ThreadPool.QueueUserWorkItem((_) =>
+            {
+                res[seg.index] = Multiply(seg.value, matrixB);
+                countdownEvent.Signal();
+            });
+        }
+
+        countdownEvent.Wait();
+
+        return Group(res);
+    }
+    public static int[,] Multiply(int[,] matrixA, int[,] matrixB)
+    {
+        if (matrixA.GetLength(1) != matrixB.GetLength(0))
             throw new ArithmeticException("Multiplication not possible");
 
-        var resultRowLength = matrixa.GetLength(0);
-        var resultColumnLength = matrixb.GetLength(1);
-        var initialBColumnLength = matrixb.GetLength(0);
+        var resultRowLength = matrixA.GetLength(0);
+        var resultColumnLength = matrixB.GetLength(1);
+        var initialBColumnLength = matrixB.GetLength(0);
 
         var result = new int[resultRowLength, resultColumnLength];
 
-        var temp = 0;
+        var accumulator = 0;
 
         for (int i = 0; i < resultRowLength; i++)
             for (int j = 0; j < resultColumnLength; j++)
             {
-                temp = 0;
+                accumulator = 0;
                 for (int k = 0; k < initialBColumnLength; k++)
-                    temp += matrixa[i, k] * matrixb[k, j];
-                result[i, j] = temp;
+                    accumulator += matrixA[i, k] * matrixB[k, j];
+                result[i, j] = accumulator;
             }
 
         return result;
     }
 
-    public void Print(int[,] matrix, string title)
+    private static int[,] Group(List<int[,]> source)
     {
-        System.Console.WriteLine(title);
-        for (var i = 0; i < matrix.GetLength(0); i++)
-        {
-            for (int j = 0; j < matrix.GetLength(1); j++)
-                System.Console.Write("{0,-10}", matrix[i, j]);
-            System.Console.WriteLine();
-        }
-        System.Console.WriteLine();
-    }
+        var targetHeight = (source.Count - 1) * source.ElementAt(0).GetLength(0) + (source.Last().GetLength(0));
+        var targetWidth = source.ElementAt(0).GetLength(1);
 
-    public void Print(List<int[,]> matrix)
-    {
-        foreach (var item in matrix)
-            for (var i = 0; i < item.GetLength(0); i++)
+        var result = new int[targetHeight, targetWidth];
+
+        var targetRowIndex = 0;
+        foreach (var sourceSegment in source)
+            for (var sourceRowIndex = 0; sourceRowIndex < sourceSegment.GetLength(0); sourceRowIndex++)
             {
-                for (int j = 0; j < item.GetLength(1); j++)
-                    System.Console.Write("{0,-10}", item[i, j]);
-                System.Console.WriteLine();
-            }
-        System.Console.WriteLine();
-    }
-
-    public int[,] FillRandom(int rows, int cols, int min, int max)
-    {
-        var rand = new Random(DateTime.Now.Millisecond);
-
-        var temp = new int[rows, cols];
-
-        for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                temp[i, j] = rand.Next(min, max);
-
-        return temp;
-    }
-
-    public int[,] Group(List<int[,]> src)
-    {
-        var targetHeight = (src.Count - 1) * src.ElementAt(0).GetLength(0) + (src.Last().GetLength(0));
-        var targetWidth = src.ElementAt(0).GetLength(1);
-
-        var res = new int[targetHeight, targetWidth];
-
-        var c = 0;
-        foreach (var i in src)
-            for (var j = 0; j < i.GetLength(0); j++)
-            {
-                for (var k = 0; k < i.GetLength(1); k++)
-                    res[c, k] = i[j, k];
-                c++;
+                for (var columnIndex = 0; columnIndex < sourceSegment.GetLength(1); columnIndex++)
+                    result[targetRowIndex, columnIndex] = sourceSegment[sourceRowIndex, columnIndex];
+                targetRowIndex++;
             }
 
-        return res;
+        return result;
     }
 
-    public List<int[,]> GetSegments(int[,] matrix, int count)
+    private static List<int[,]> GetSegments(int[,] matrix, int count)
     {
         var matrixRows = matrix.GetLength(0);
         var matrixColumns = matrix.GetLength(1);
         var segmentRows = matrixRows % count != 0 ? matrixRows / count + 1 : matrixRows / count;
         var remainder = matrixRows % segmentRows;
-        var result = new List<int[,]>(count);
+        var result = new List<int[,]>(matrixRows > count ? count : matrixRows);
 
         for (var i = 0; i < matrixRows; i += segmentRows)
         {
