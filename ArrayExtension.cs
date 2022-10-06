@@ -5,7 +5,7 @@ namespace Matrix;
 
 public static class ArrayExtension
 {
-    public static string? AsString(this int[,]? source)
+    public static string? AsString(this float[,]? source)
     {
         if (source is null) return null;
 
@@ -13,10 +13,10 @@ public static class ArrayExtension
 
         for (var i = 0; i < source.GetLength(0); i++)
         {
-            sb.Append(source[i, 0]);
+            sb.AppendFormat("{0:N5}", source[i, 0]);
 
             for (var j = 1; j < source.GetLength(1); j++)
-                sb.AppendFormat(", {0,5}", source[i, j]);
+                sb.AppendFormat("\t{0,5:N5}", source[i, j]);
 
             sb.Append('\n');
         }
