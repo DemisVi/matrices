@@ -9,15 +9,15 @@ public static class Matrix
 {
     public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB, bool isTransposed = false)
     {
-        var segCount = matrixA.GetLength(0) < Environment.ProcessorCount ? matrixA.GetLength(0) : Environment.ProcessorCount;
-
+        
         var result = new List<float[,]>(segCount);
         var resultColumnHeight = matrixA.GetLength(0);
         var resultRowLength = isTransposed ? matrixB.GetLength(0) : matrixB.GetLength(1);
 
+        var segCount = matrixA.GetLength(0) < Environment.ProcessorCount ? matrixA.GetLength(0) : Environment.ProcessorCount;
         using var countdownEvent = new CountdownEvent(segCount);
 
-        foreach (var seg in GetSegments(matrixA, segCount).Select((value, index) => new { value, index }))
+        foreach (var seg in .Select((value, index) => new { value, index }))
         {
             result.Add(new float[resultColumnHeight, resultRowLength]);
 
@@ -115,13 +115,13 @@ public static class Matrix
         return result;
     }
 
-    private static List<float[,]> GetSegments(float[,] matrix, int count)
+    public static bool TryGetSegments(out List<float[,]> dest, float[,] matrix, int count)
     {
         var matrixRows = matrix.GetLength(0);
         var matrixColumns = matrix.GetLength(1);
         var segmentRows = matrixRows % count != 0 ? matrixRows / count + 1 : matrixRows / count;
         var remainder = matrixRows % segmentRows;
-        var result = new List<float[,]>(matrixRows > count ? count : matrixRows);
+        dest = new List<float[,]>(matrixRows > count ? count : matrixRows);
 
         for (var i = 0; i < matrixRows; i += segmentRows)
         {
@@ -129,12 +129,10 @@ public static class Matrix
             var temp = new float[segmentRows, matrixColumns];
             for (var j = 0; j < matrixColumns; j++)
                 for (var k = 0; k < segmentRows; k++)
-                {
                     temp[k, j] = matrix[i + k, j];
-                }
-            result.Add(temp);
+            dest.Add(temp);
         }
 
-        return result;
+        return dest.Count == count;
     }
 }

@@ -46,9 +46,24 @@ public static class Prog
 {
     public static void Main()
     {
-        SimpleBench sb = new();
-        System.Console.WriteLine(sb.MultiThread().AsString());
-        System.Console.WriteLine(sb.MultiThreadTransposed().AsString());
+        var m = new float[1111, 1111];
+        FillRandom(ref m);
+        Matrix.TryGetSegments(out var res, m, 8);
+        
+        System.Console.WriteLine(res[7].GetLength(0));
+ 
+        // SimpleBench sb = new();
+        // System.Console.WriteLine(sb.MultiThread().AsString());
+        // System.Console.WriteLine(sb.MultiThreadTransposed().AsString());
         // var some = BenchmarkRunner.Run<SimpleBench>();
+
+        void FillRandom(ref float[,] result)
+        {
+            var rand = new Random(DateTime.Now.Millisecond);
+
+            for (int i = 0; i < result.GetLength(0); i++)
+                for (int j = 0; j < result.GetLength(1); j++)
+                    result[i, j] = rand.NextSingle();
+        }
     }
 }
