@@ -9,15 +9,15 @@ public static class Matrix
 {
     public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB, bool isTransposed = false)
     {
-        
-        var result = new List<float[,]>(segCount);
+        var isSegmented = TryGetSegments(out var segs, matrixA, Environment.ProcessorCount);
+        var result = new List<float[,]>(segs.Count);
         var resultColumnHeight = matrixA.GetLength(0);
         var resultRowLength = isTransposed ? matrixB.GetLength(0) : matrixB.GetLength(1);
 
-        var segCount = matrixA.GetLength(0) < Environment.ProcessorCount ? matrixA.GetLength(0) : Environment.ProcessorCount;
+        var segCount = isSegmented ? matrixA.GetLength(0) : Environment.ProcessorCount;
         using var countdownEvent = new CountdownEvent(segCount);
 
-        foreach (var seg in .Select((value, index) => new { value, index }))
+        foreach (var seg in segs.Select((value, index) => new { value, index }))
         {
             result.Add(new float[resultColumnHeight, resultRowLength]);
 
@@ -117,6 +117,9 @@ public static class Matrix
 
     public static bool TryGetSegments(out List<float[,]> dest, float[,] matrix, int count)
     {
+        if (0 == matrix.GetLength(0) || 0 == matrix.GetLength(1))
+            throw new ArithmeticException("Matrix contains no elements!");
+        
         var matrixRows = matrix.GetLength(0);
         var matrixColumns = matrix.GetLength(1);
         var segmentRows = matrixRows % count != 0 ? matrixRows / count + 1 : matrixRows / count;

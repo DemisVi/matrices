@@ -46,24 +46,39 @@ public static class Prog
 {
     public static void Main()
     {
-        var m = new float[1111, 1111];
-        FillRandom(ref m);
-        Matrix.TryGetSegments(out var res, m, 8);
-        
-        System.Console.WriteLine(res[7].GetLength(0));
- 
+        var rand = new Random(DateTime.Now.Millisecond);
+
+        for (int i = 1; i < 500; i++)
+        {
+            var m = new float[i, i];
+
+            FillRandom(ref m);
+
+            if (false == Matrix.TryGetSegments(out var res, m, 8))
+            {
+                System.Console.WriteLine("{0}: {1}, Segs: {2}, Rows: {3} ", i, 0, res.Count, m.GetLength(0));
+
+                foreach (var j in res)
+                    System.Console.Write("{0,5}", j.GetLength(0));
+
+                System.Console.WriteLine();
+            }
+        }
+
+
         // SimpleBench sb = new();
         // System.Console.WriteLine(sb.MultiThread().AsString());
         // System.Console.WriteLine(sb.MultiThreadTransposed().AsString());
         // var some = BenchmarkRunner.Run<SimpleBench>();
 
-        void FillRandom(ref float[,] result)
-        {
-            var rand = new Random(DateTime.Now.Millisecond);
+    }
 
-            for (int i = 0; i < result.GetLength(0); i++)
-                for (int j = 0; j < result.GetLength(1); j++)
-                    result[i, j] = rand.NextSingle();
-        }
+    public static void FillRandom(ref float[,] result)
+    {
+        var rand = new Random(DateTime.Now.Millisecond);
+
+        for (int i = 0; i < result.GetLength(0); i++)
+            for (int j = 0; j < result.GetLength(1); j++)
+                result[i, j] = rand.NextSingle();
     }
 }
