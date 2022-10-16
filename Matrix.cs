@@ -117,22 +117,18 @@ public static class Matrix
 
     public static bool TryGetSegments(out List<float[,]> dest, float[,] matrix, int count)
     {
-        if (0 == matrix.GetLength(0) || 0 == matrix.GetLength(1))
+        if (matrix.Length <= 0)
             throw new ArithmeticException("Matrix contains no elements!");
-        
+
         var matrixRows = matrix.GetLength(0);
         var matrixColumns = matrix.GetLength(1);
-        var segmentRows = matrixRows % count != 0 ? matrixRows / count + 1 : matrixRows / count;
-        var remainder = matrixRows % segmentRows;
-        dest = new List<float[,]>(matrixRows > count ? count : matrixRows);
+        var segmentRows = matrixRows > count ? matrixRows / count : 1;
+        var remainder = matrixRows > count ? matrixRows % count : 0;
+        var segmentCount = matrixRows <= count ? matrixRows : count;
+        dest = new List<float[,]>(segmentCount);
 
-        for (var i = 0; i < matrixRows; i += segmentRows)
-        {
-            if (i + remainder > matrixRows - 1) segmentRows = remainder;
-            var temp = new float[segmentRows, matrixColumns];
-            for (var j = 0; j < matrixColumns; j++)
-                for (var k = 0; k < segmentRows; k++)
-                    temp[k, j] = matrix[i + k, j];
+        
+
             dest.Add(temp);
         }
 
