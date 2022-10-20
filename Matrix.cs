@@ -122,16 +122,23 @@ public static class Matrix
 
         var matrixRows = matrix.GetLength(0);
         var matrixColumns = matrix.GetLength(1);
+
+        var segmentCount = matrixRows <= count ? matrixRows : count;
         var segmentRows = matrixRows > count ? matrixRows / count : 1;
         var remainder = matrixRows > count ? matrixRows % count : 0;
-        var segmentCount = matrixRows <= count ? matrixRows : count;
+
+        var segmentSizesMap = Enumerable.Repeat(segmentRows, segmentCount).Select(x => 0 < remainder-- ? ++x : x).ToArray();
+
         dest = new List<float[,]>(segmentCount);
 
-        
-
+        for (var i = 0; i < segmentCount; ++i)
+        {
+            var temp = new float[segmentSizesMap[i], matrixColumns];
+            for (var j = 0; j < segmentSizesMap[i]; ++j)
+                for (var k = 0; k < matrixColumns; ++k)
+                temp[j, k] = matrix[i + j, k];
             dest.Add(temp);
         }
-
         return dest.Count == count;
     }
 }

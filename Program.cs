@@ -48,7 +48,7 @@ public static class Prog
     {
         var rand = new Random(DateTime.Now.Millisecond);
 
-        for (int i = 1; i < 500; i++)
+        for (int i = 1; i < 100; i++)
         {
             var m = new float[i, i];
 
@@ -62,6 +62,7 @@ public static class Prog
                     System.Console.Write("{0,5}", j.GetLength(0));
 
                 System.Console.WriteLine();
+                
             }
         }
 
