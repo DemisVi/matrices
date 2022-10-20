@@ -27,10 +27,10 @@ public class SimpleBench
     public float[,] SingleThreadTransposed() => Matrix.Multiply(m2, m3, true);
 
     [Benchmark]
-    public float[,] MultiThread() => Matrix.ThreadedMultiply(m3, m4);
+    public float[,] MultiThread() => Matrix.ThreadedMultiply(m3, m4, Environment.ProcessorCount);
 
     [Benchmark]
-    public float[,] MultiThreadTransposed() => Matrix.ThreadedMultiply(m3, m4, true);
+    public float[,] MultiThreadTransposed() => Matrix.ThreadedMultiply(m3, m4, Environment.ProcessorCount, true);
 
     private void FillRandom(ref float[,] result)
     {
@@ -48,22 +48,20 @@ public static class Prog
     {
         var rand = new Random(DateTime.Now.Millisecond);
 
-        for (int i = 1; i < 100; i++)
+        for (int i = 0; i < 100; i += 4)
         {
+            if (i == 0) continue;
+
             var m = new float[i, i];
 
             FillRandom(ref m);
 
-            if (false == Matrix.TryGetSegments(out var res, m, 8))
-            {
-                System.Console.WriteLine("{0}: {1}, Segs: {2}, Rows: {3} ", i, 0, res.Count, m.GetLength(0));
-
-                foreach (var j in res)
-                    System.Console.Write("{0,5}", j.GetLength(0));
-
-                System.Console.WriteLine();
-                
-            }
+            System.Console.WriteLine(m.AsString());
+            Matrix.TryGetSegments(out var res, m, Environment.ProcessorCount);
+            foreach (var e in res)
+                System.Console.WriteLine(e.AsString());
+            System.Console.WriteLine(Matrix.Multiply(m, m, false).AsString());
+            System.Console.WriteLine(Matrix.ThreadedMultiply(m, m, Environment.ProcessorCount, false).AsString());
         }
 
 

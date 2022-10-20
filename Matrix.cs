@@ -7,19 +7,24 @@ namespace Matrix;
 
 public static class Matrix
 {
-    public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB, bool isTransposed = false)
+    public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB,  int threadCount, bool isTransposed = false)
     {
-        var isSegmented = TryGetSegments(out var segs, matrixA, Environment.ProcessorCount);
-        var result = new List<float[,]>(segs.Count);
-        var resultColumnHeight = matrixA.GetLength(0);
-        var resultRowLength = isTransposed ? matrixB.GetLength(0) : matrixB.GetLength(1);
+        if (matrixA.Length <= 0 || matrixB.Length <= 0)
+            throw new ArithmeticException("Matrix contains no elements!");
 
-        var segCount = isSegmented ? matrixA.GetLength(0) : Environment.ProcessorCount;
-        using var countdownEvent = new CountdownEvent(segCount);
+        var isExpectedSegments = TryGetSegments(out var segs, matrixA, threadCount);
+        var segmrntRows = segs[0].GetLength(0);
+        var segmentColumns = isTransposed ? matrixB.GetLength(0) : matrixB.GetLength(1);
+
+        threadCount = isExpectedSegments ? threadCount : segs.Count;
+
+        var result = new List<float[,]>(threadCount);
+
+        using var countdownEvent = new CountdownEvent(threadCount);
 
         foreach (var seg in segs.Select((value, index) => new { value, index }))
         {
-            result.Add(new float[resultColumnHeight, resultRowLength]);
+            result.Add(new float[segmrntRows, segmentColumns]);
 
             ThreadPool.QueueUserWorkItem((_) =>
             {
