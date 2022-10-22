@@ -7,7 +7,7 @@ namespace Matrix;
 
 public static class Matrix
 {
-    public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB, int threadCount, bool isTransposed = false)
+    public static float[,] Multiply(float[,] matrixA, float[,] matrixB, int threadCount, bool isTransposed = false)
     {
         if (matrixA.Length <= 0 || matrixB.Length <= 0)
             throw new ArithmeticException("Matrix contains no elements!");
@@ -56,27 +56,10 @@ public static class Matrix
         if (matrixA.GetLength(1) != matrixB.GetLength(0))
             throw new ArithmeticException("Multiplication not possible. Is matrix B transposed?");
 
-        var resultRowLength = matrixA.GetLength(0);
-        var resultColumnHeight = matrixB.GetLength(1);
-        var initialBColumnHeight = matrixB.GetLength(0);
-
-        var result = new float[resultRowLength, resultColumnHeight];
-
-        var accumulator = 0f;
-
-        for (int i = 0; i < resultRowLength; i++)
-            for (int j = 0; j < resultColumnHeight; j++)
-            {
-                accumulator = 0;
-                for (int k = 0; k < initialBColumnHeight; k++)
-                    accumulator += matrixA[i, k] * matrixB[k, j];
-                result[i, j] = accumulator;
-            }
-
-        return result;
+        return MultiplyTransposed(matrixA, Transpose(matrixB));
     }
 
-    public static float[,] MultiplyTransposed(float[,] matrixA, float[,] matrixB)
+    private static float[,] MultiplyTransposed(float[,] matrixA, float[,] matrixB)
     {
         if (matrixA.GetLength(1) != matrixB.GetLength(1))
             throw new ArithmeticException("Multiplication not possible. Is matrix B transposed?");
@@ -120,7 +103,7 @@ public static class Matrix
         return result;
     }
 
-    public static bool TryGetSegments(out List<float[,]> dest, float[,] matrix, int count)
+    private static bool TryGetSegments(out List<float[,]> dest, float[,] matrix, int count)
     {
         if (matrix.Length <= 0)
             throw new ArithmeticException("Matrix contains no elements!");
