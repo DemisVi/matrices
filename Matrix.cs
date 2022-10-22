@@ -103,7 +103,7 @@ public static class Matrix
 
     private static float[,] Group(List<float[,]> source)
     {
-        var targetHeight = (source.Count - 1) * source.ElementAt(0).GetLength(0) + (source.Last().GetLength(0));
+        var targetHeight = source.Sum(x => x.GetLength(0));
         var targetWidth = source.ElementAt(0).GetLength(1);
 
         var result = new float[targetHeight, targetWidth];

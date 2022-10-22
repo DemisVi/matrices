@@ -1,8 +1,5 @@
 ﻿using System;
-using Matrix;
-using BenchmarkDotNet;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
 
 namespace Matrix;
 
