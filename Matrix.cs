@@ -7,7 +7,7 @@ namespace Matrix;
 
 public static class Matrix
 {
-    public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB,  int threadCount, bool isTransposed = false)
+    public static float[,] ThreadedMultiply(float[,] matrixA, float[,] matrixB, int threadCount, bool isTransposed = false)
     {
         if (matrixA.Length <= 0 || matrixB.Length <= 0)
             throw new ArithmeticException("Matrix contains no elements!");
@@ -125,25 +125,28 @@ public static class Matrix
         if (matrix.Length <= 0)
             throw new ArithmeticException("Matrix contains no elements!");
 
-        var matrixRows = matrix.GetLength(0);
-        var matrixColumns = matrix.GetLength(1);
+        var sourceRows = matrix.GetLength(0);
+        var sourceColumns = matrix.GetLength(1);
 
-        var segmentCount = matrixRows <= count ? matrixRows : count;
-        var segmentRows = matrixRows > count ? matrixRows / count : 1;
-        var remainder = matrixRows > count ? matrixRows % count : 0;
+        var segmentCount = sourceRows <= count ? sourceRows : count;
+        var segmentRows = sourceRows > count ? sourceRows / count : 1;
+        var remainder = sourceRows > count ? sourceRows % count : 0;
 
         var segmentSizesMap = Enumerable.Repeat(segmentRows, segmentCount).Select(x => 0 < remainder-- ? ++x : x).ToArray();
+        var segmentSizeIndex = 0;
 
         dest = new List<float[,]>(segmentCount);
 
-        for (var i = 0; i < segmentCount; ++i)
+        for (int i = 0; i < sourceRows; i += segmentSizesMap[segmentSizeIndex++])
         {
-            var temp = new float[segmentSizesMap[i], matrixColumns];
-            for (var j = 0; j < segmentSizesMap[i]; ++j)
-                for (var k = 0; k < matrixColumns; ++k)
-                temp[j, k] = matrix[i + j, k];
+            var temp = new float[segmentSizesMap[segmentSizeIndex], sourceColumns];
+
+            for (int j = 0; j < segmentSizesMap[segmentSizeIndex]; j++)
+                for (int k = 0; k < sourceColumns; k++)
+                    temp[j, k] = matrix[i + j, k];
             dest.Add(temp);
         }
+
         return dest.Count == count;
     }
 }
