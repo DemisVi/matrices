@@ -23,4 +23,11 @@ public static class ArrayExtension
 
         return sb.ToString();
     }
+
+    public static float GetValueBySingleIndex(this float[,] source, int index)
+    {
+        var row = Math.DivRem(index, source.GetLength(1), out int column);
+
+        return source[row, column];
+    }
 }
