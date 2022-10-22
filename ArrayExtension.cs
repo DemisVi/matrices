@@ -13,10 +13,10 @@ public static class ArrayExtension
 
         for (var i = 0; i < source.GetLength(0); i++)
         {
-            sb.AppendFormat("{0:N5}", source[i, 0]);
+            sb.AppendFormat("{0:N6}", source[i, 0]);
 
             for (var j = 1; j < source.GetLength(1); j++)
-                sb.AppendFormat("\t{0,5:N5}", source[i, j]);
+                sb.AppendFormat(" {0:N6}", source[i, j]);
 
             sb.Append(Environment.NewLine);
         }
@@ -32,10 +32,10 @@ public static class ArrayExtension
 
         for (var i = 0; i < source.GetLength(0); i++)
         {
-            sb.AppendFormat("{0:N5}", source[i][0]);
+            sb.AppendFormat("{0:N6}", source[i][0]);
 
             for (var j = 1; j < source.GetLength(1); j++)
-                sb.AppendFormat("\t{0,5:N5}", source[i][j]);
+                sb.AppendFormat(" {0:N6}", source[i][j]);
 
             sb.Append(Environment.NewLine);
         }

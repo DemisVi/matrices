@@ -32,10 +32,10 @@ public static class Prog
 
 
         System.Console.WriteLine(m1.AsString());
-        System.Console.WriteLine(m4);
+        System.Console.WriteLine(m4.ToSingle().AsString());
 
         System.Console.WriteLine(Matrix.Multiply(m1, m1, 4).AsString());
-        System.Console.WriteLine(m4 * m4);
+        System.Console.WriteLine((m4 * m4).ToSingle().AsString());
     }
 
     public static void FillRandom(ref float[,] result)
